@@ -4,3 +4,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+ec-core = { git = "https://github.com/unhindered-ec/unhindered-ec.git", rev = "59028b74b4da80f654999eb82daa0a2af9e87ccf" }
