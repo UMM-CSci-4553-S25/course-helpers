@@ -4,5 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-ec-core = { git = "https://github.com/unhindered-ec/unhindered-ec.git", rev = "59028b74b4da80f654999eb82daa0a2af9e87ccf" }
+ec-core = { git = "https://github.com/unhindered-ec/unhindered-ec/", rev = "297ae0512ebd2da5f83f4bb6ee5239a40662872d" } # version = "0.1.0-course.2", registry = "ec-course" }
+ec-linear = { git = "https://github.com/unhindered-ec/unhindered-ec/", rev = "297ae0512ebd2da5f83f4bb6ee5239a40662872d" }
+flume = "0.11.1"
+miette = { version = "7.4.0", features = ["fancy"] }
+rand = "0.9.0-alpha.2"
 rayon = "1.10.0"
