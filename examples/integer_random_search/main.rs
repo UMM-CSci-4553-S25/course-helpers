@@ -4,15 +4,17 @@ use course_helpers::{
     consumer::Consumer,
     processor::{min_max_distance::MinMaxDistance, print_monitor::PrintMonitor, Processor},
     random_search::{RandomSearch, RandomSearchError},
-    scorer::distance_from_target::DistanceFromTarget,
 };
+use ec_core::individual::scorer::FnScorer;
 
 fn main() -> Result<(), RandomSearchError> {
     let channel_capacity = 1_000;
     let (sender, receiver) = flume::bounded(channel_capacity);
 
     let num_to_create = 10_000;
-    let scorer = DistanceFromTarget::new(589);
+    // let scorer = DistanceFromTarget::new(589);
+    let target = 589;
+    let scorer = FnScorer(|value: &i64| value.abs_diff(target));
 
     let monitor = PrintMonitor::default();
     let summarizer = MinMaxDistance::default();
