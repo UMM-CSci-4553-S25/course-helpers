@@ -1,7 +1,7 @@
 use std::thread;
 
 use course_helpers::{
-    consumer::Consumer,
+    channel_consumer::ChannelConsumer,
     processor::{min_max_distance::MinMaxDistance, print_monitor::PrintMonitor, Processor},
     random_search::{RandomSearch, RandomSearchError},
 };
@@ -22,7 +22,7 @@ fn main() -> Result<(), RandomSearchError> {
     let mut all_monitors = (monitor, summarizer);
 
     let monitor_handle = thread::spawn(move || {
-        Consumer::consume(receiver, &mut all_monitors);
+        all_monitors.consume_all(receiver);
         all_monitors.finalize_and_print();
     });
 

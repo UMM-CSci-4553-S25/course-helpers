@@ -1,3 +1,5 @@
+use crate::channel_consumer::ChannelConsumer;
+
 pub mod min_max_distance;
 pub mod print_monitor;
 
@@ -20,5 +22,16 @@ where
     fn finalize_and_print(&self) {
         self.0.finalize_and_print();
         self.1.finalize_and_print();
+    }
+}
+
+impl<S, P> ChannelConsumer<S> for P
+where
+    P: Processor<S>,
+{
+    fn consume_all(&mut self, receiver: flume::Receiver<S>) {
+        while let Ok(solution) = receiver.recv() {
+            self.process(&solution);
+        }
     }
 }
