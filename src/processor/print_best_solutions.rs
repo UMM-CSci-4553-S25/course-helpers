@@ -10,7 +10,10 @@ where
     best_error_so_far: Option<T>,
 }
 
-impl Default for PrintBestSolution<u64> {
+impl<T> Default for PrintBestSolution<T>
+where
+    T: Ord,
+{
     fn default() -> Self {
         PrintBestSolution {
             best_error_so_far: None,
@@ -29,14 +32,6 @@ impl Processor<(usize, i64, u64)> for PrintBestSolution<u64> {
                 "New best solution found:  {:25} with error {:25} at sample number {:25}",
                 solution, error, sample_number
             );
-        }
-    }
-}
-
-impl Default for PrintBestSolution<Score<u64>> {
-    fn default() -> Self {
-        PrintBestSolution {
-            best_error_so_far: None,
         }
     }
 }
