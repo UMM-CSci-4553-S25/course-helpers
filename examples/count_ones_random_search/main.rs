@@ -2,7 +2,9 @@ use std::thread;
 
 use course_helpers::{
     channel_consumer::ChannelConsumer,
-    processor::{min_max_distance::MinMaxDistance, print_monitor::PrintMonitor, Processor},
+    processor::{
+        min_max_distance::MinMaxDistance, print_best_solutions::PrintBestSolution, Processor,
+    },
     random_search::{RandomSearch, RandomSearchError},
 };
 use ec_core::{
@@ -14,8 +16,8 @@ use ec_linear::genome::bitstring::Bitstring;
 use rand::distr::StandardUniform;
 
 #[must_use]
-pub fn count_ones(bits: &[bool]) -> TestResults<Score<i64>> {
-    bits.iter().copied().map(i64::from).collect()
+pub fn count_ones(bits: &[bool]) -> TestResults<Score<u64>> {
+    bits.iter().copied().map(u64::from).collect()
 }
 
 fn main() -> Result<(), RandomSearchError> {
@@ -27,7 +29,7 @@ fn main() -> Result<(), RandomSearchError> {
     let num_to_create = 1_000_000;
     let scorer = FnScorer(|bitstring: &Bitstring| count_ones(&bitstring.bits));
 
-    let monitor = PrintMonitor::default();
+    let monitor = PrintBestSolution::default();
     let summarizer = MinMaxDistance::default();
 
     let mut all_monitors = (monitor, summarizer);

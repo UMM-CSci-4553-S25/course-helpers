@@ -2,7 +2,9 @@ use std::thread;
 
 use course_helpers::{
     channel_consumer::ChannelConsumer,
-    processor::{min_max_distance::MinMaxDistance, print_monitor::PrintMonitor, Processor},
+    processor::{
+        min_max_distance::MinMaxDistance, print_best_solutions::PrintBestSolution, Processor,
+    },
     random_search::{RandomSearch, RandomSearchError},
 };
 use ec_core::individual::scorer::FnScorer;
@@ -16,7 +18,7 @@ fn main() -> Result<(), RandomSearchError> {
     let target = 589;
     let scorer = FnScorer(|value: &i64| value.abs_diff(target));
 
-    let monitor = PrintMonitor::default();
+    let monitor = PrintBestSolution::default();
     let summarizer = MinMaxDistance::default();
 
     let mut all_monitors = (monitor, summarizer);

@@ -26,18 +26,10 @@ impl Processor<(usize, i64, u64)> for MinMaxDistance<i64> {
         if error < self.min_error {
             self.min_error_individual = Some(individual);
             self.min_error = error;
-            // println!(
-            //     "New best solution found:  {:25} with error {:25}",
-            //     individual, error
-            // );
         }
         if error > self.max_error {
             self.max_error_individual = Some(individual);
             self.max_error = error;
-            // println!(
-            //     "New worst solution found: {:25} with error {:25}",
-            //     individual, error
-            // );
         }
     }
 
@@ -47,15 +39,15 @@ impl Processor<(usize, i64, u64)> for MinMaxDistance<i64> {
     }
 }
 
-impl Processor<(usize, Bitstring, TestResults<Score<i64>>)> for MinMaxDistance<Bitstring> {
-    fn process(&mut self, (_, individual, error): &(usize, Bitstring, TestResults<Score<i64>>)) {
-        if (error.total_result.0 as u64) < self.min_error {
+impl Processor<(usize, Bitstring, TestResults<Score<u64>>)> for MinMaxDistance<Bitstring> {
+    fn process(&mut self, (_, individual, error): &(usize, Bitstring, TestResults<Score<u64>>)) {
+        if error.total_result.0 < self.min_error {
             self.min_error_individual = Some(individual.clone());
-            self.min_error = error.total_result.0 as u64;
+            self.min_error = error.total_result.0;
         }
-        if (error.total_result.0 as u64) > self.max_error {
+        if error.total_result.0 > self.max_error {
             self.max_error_individual = Some(individual.clone());
-            self.max_error = error.total_result.0 as u64;
+            self.max_error = error.total_result.0;
         }
     }
 
