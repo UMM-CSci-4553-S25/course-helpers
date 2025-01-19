@@ -18,6 +18,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "512761e0bb2578dd7380c6baaa0f4ce03e84f95e960231d1dec8bf4d7d6e2627"
 
 [[package]]
+name = "anyhow"
+version = "1.0.95"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "34ac096ce696dc2fcabef30516bb13c0a68a11d30131d3df6f04711467681b04"
+
+[[package]]
 name = "autocfg"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -81,12 +87,14 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 name = "course-helpers"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "ec-core",
  "ec-linear",
  "flume",
  "miette",
- "rand 0.9.0-beta.1",
+ "rand 0.9.0-beta.3",
  "rayon",
+ "typed-builder",
 ]
 
 [[package]]
@@ -116,29 +124,46 @@ checksum = "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28"
 
 [[package]]
 name = "ec-core"
-version = "0.1.0"
-source = "git+https://github.com/unhindered-ec/unhindered-ec/?rev=297ae0512ebd2da5f83f4bb6ee5239a40662872d#297ae0512ebd2da5f83f4bb6ee5239a40662872d"
+version = "0.1.0-course.3"
+source = "registry+https://github.com/UMM-CSci-4553-S25/registry.git"
+checksum = "767cfb7cf1887768f0082e82c058b3182b3105ec09e31ba3cfc743c7a77ebc09"
 dependencies = [
+ "ec_macros",
  "itertools",
  "macro_railroad_annotation",
  "miette",
  "num-traits",
  "polonius-the-crab",
- "rand 0.9.0-beta.1",
+ "rand 0.9.0-beta.3",
  "rayon",
+ "static_assertions",
  "thiserror",
 ]
 
 [[package]]
 name = "ec-linear"
-version = "0.1.0"
-source = "git+https://github.com/unhindered-ec/unhindered-ec/?rev=297ae0512ebd2da5f83f4bb6ee5239a40662872d#297ae0512ebd2da5f83f4bb6ee5239a40662872d"
+version = "0.1.0-course.3"
+source = "registry+https://github.com/UMM-CSci-4553-S25/registry.git"
+checksum = "63de2163be3587aade3de1e5f954d234bde69b62a7c12e909c8307625f006e2c"
 dependencies = [
  "ec-core",
  "miette",
  "num-traits",
- "rand 0.9.0-beta.1",
+ "rand 0.9.0-beta.3",
+ "static_assertions",
  "thiserror",
+]
+
+[[package]]
+name = "ec_macros"
+version = "0.1.0-course.3"
+source = "registry+https://github.com/UMM-CSci-4553-S25/registry.git"
+checksum = "b48393e720ae1da6fdf210189cefc6006725ace67da5edfc97f88d8528b5fe0f"
+dependencies = [
+ "manyhow",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -487,9 +512,9 @@ dependencies = [
 
 [[package]]
 name = "rand"
-version = "0.9.0-beta.1"
+version = "0.9.0-beta.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8478de76992f2825a1052cc2ae9d1401cdb62687761d4100ddd69a73dc3dc48"
+checksum = "6fccbfebb3972a41a31c605a59207d9fba5489b9a87d9d87024cb6df73a32ec7"
 dependencies = [
  "rand_chacha 0.9.0-beta.1",
  "rand_core 0.9.0-beta.1",
@@ -596,6 +621,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "static_assertions"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
 name = "supports-color"
 version = "3.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -661,6 +692,26 @@ name = "thiserror-impl"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "typed-builder"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7e14ed59dc8b7b26cacb2a92bad2e8b1f098806063898ab42a3bd121d7d45e75"
+dependencies = [
+ "typed-builder-macro",
+]
+
+[[package]]
+name = "typed-builder-macro"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "560b82d656506509d43abe30e0ba64c56b1953ab3d4fe7ba5902747a7a3cedd5"
 dependencies = [
  "proc-macro2",
  "quote",
