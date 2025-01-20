@@ -26,7 +26,30 @@ use std::fmt::Debug;
 // or both? (They have to provide at least one, but they don't have to provide both.)
 
 #[derive(Builder)]
-pub struct Run<Scorer, Sel, Rec, Mut, Ins> {
+pub struct Run<
+    Scorer,
+    Sel,
+    Rec,
+    Mut,
+    Ins = fn(usize, &Vec<EcIndividual<Bitstring, <Scorer as IndividualScorer<Bitstring>>::Score>>),
+> where
+    Scorer: IndividualScorer<Bitstring> + Send + Sync,
+    Scorer::Score: Debug + Send + Sync + Ord,
+    // Selector, Recombinator, and Mutator
+    Sel: Selector<Vec<EcIndividual<Bitstring, Scorer::Score>>> + Send + Sync,
+    Rec: Recombinator<[Bitstring; 2], Output = Bitstring> + Send + Sync,
+    Mut: Mutator<Bitstring> + Send + Sync,
+    // All associated error types have to implement `std::error::Error`.
+    // They also have to be `Send` and `Sync` if we're using parallel evaluation
+    // so that errors can propagate across threads.
+    // They also have to be bounded by `'static` lifetimes so they can be held to the
+    // end of the program as necessary.
+    Sel::Error: std::error::Error + Send + Sync + 'static,
+    Rec::Error: std::error::Error + Send + Sync + 'static,
+    Mut::Error: std::error::Error + Send + Sync + 'static,
+    // Inspector
+    Ins: FnMut(usize, &Vec<EcIndividual<Bitstring, Scorer::Score>>),
+{
     bit_length: usize,
 
     #[builder(default = 100)]
