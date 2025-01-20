@@ -1,3 +1,4 @@
+use bon::Builder;
 use ec_core::{
     distributions::collection::ConvertToCollectionGenerator,
     generation::Generation,
@@ -23,19 +24,21 @@ use rand::{
 };
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use std::fmt::Debug;
-use typed_builder::TypedBuilder;
 
 // TODO: What if we want to allow people to specify either a recombinator or a mutator
 // or both? (They have to provide at least one, but they don't have to provide both.)
 
-#[derive(TypedBuilder)]
+#[derive(Builder)]
 pub struct Run<Scorer, Sel, Rec, Mut> {
     bit_length: usize,
 
+    #[builder(default = 100)]
     population_size: usize,
 
+    #[builder(default = usize::MAX)]
     max_generations: usize,
 
+    #[builder(default = true)]
     parallel_evaluation: bool,
 
     scorer: Scorer,
