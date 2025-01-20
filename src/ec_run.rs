@@ -26,13 +26,8 @@ use std::fmt::Debug;
 // or both? (They have to provide at least one, but they don't have to provide both.)
 
 #[derive(Builder)]
-pub struct Run<
-    Scorer,
-    Sel,
-    Rec,
-    Mut,
-    Ins = fn(usize, &Vec<EcIndividual<Bitstring, <Scorer as IndividualScorer<Bitstring>>::Score>>),
-> where
+pub struct Run<Scorer, Sel, Rec, Mut, Ins>
+where
     Scorer: IndividualScorer<Bitstring> + Send + Sync,
     Scorer::Score: Debug + Send + Sync + Ord,
     // Selector, Recombinator, and Mutator
@@ -66,7 +61,7 @@ pub struct Run<
     recombinator: Rec,
     mutator: Mut,
 
-    inspector: Option<Ins>,
+    inspector: Ins,
 }
 
 #[expect(clippy::match_bool, reason = "I like the `match` instead of `if`")]
@@ -120,18 +115,14 @@ where
         let mut generation = Generation::new(child_maker, population);
 
         for generation_number in 0..self.max_generations {
-            if let Some(inspector) = &mut self.inspector {
-                inspector(generation_number, generation.population());
-            }
+            (self.inspector)(generation_number, generation.population());
             match self.parallel_evaluation {
                 true => generation.par_next()?,
                 false => generation.serial_next()?,
             }
         }
 
-        if let Some(inspector) = &mut self.inspector {
-            inspector(self.max_generations, generation.population());
-        }
+        (self.inspector)(self.max_generations, generation.population());
 
         Ok(generation.into_population())
     }
