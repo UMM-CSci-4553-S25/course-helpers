@@ -5,31 +5,28 @@ use ec_core::{
     individual::{
         ec::{EcIndividual, WithScorer},
         scorer::Scorer as IndividualScorer,
-        Individual,
     },
     operator::{
         genome_extractor::GenomeExtractor,
         genome_scorer::GenomeScorer,
         mutator::{Mutate, Mutator},
         recombinator::{Recombinator, Recombine},
-        selector::{best::Best, Select, Selector},
+        selector::{Select, Selector},
         Composable,
     },
-    population::Population,
 };
 use ec_linear::genome::bitstring::Bitstring;
 use rand::{
     distr::{Bernoulli, Distribution},
     rng,
 };
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use std::fmt::Debug;
 
 // TODO: What if we want to allow people to specify either a recombinator or a mutator
 // or both? (They have to provide at least one, but they don't have to provide both.)
 
 #[derive(Builder)]
-pub struct Run<Scorer, Sel, Rec, Mut> {
+pub struct Run<Scorer, Sel, Rec, Mut, Ins> {
     bit_length: usize,
 
     #[builder(default = 100)]
@@ -45,13 +42,16 @@ pub struct Run<Scorer, Sel, Rec, Mut> {
     selector: Sel,
     recombinator: Rec,
     mutator: Mut,
+
+    inspector: Option<Ins>,
 }
 
 #[expect(clippy::match_bool, reason = "I like the `match` instead of `if`")]
-impl<Scorer, Sel, Rec, Mut> Run<Scorer, Sel, Rec, Mut>
+impl<Scorer, Sel, Rec, Mut, Ins> Run<Scorer, Sel, Rec, Mut, Ins>
 where
     Scorer: IndividualScorer<Bitstring> + Send + Sync,
-    Scorer::Score: Debug + Default + Clone + Send + Sync + Ord,
+    Scorer::Score: Debug + Send + Sync + Ord,
+    // Selector, Recombinator, and Mutator
     Sel: Selector<Vec<EcIndividual<Bitstring, Scorer::Score>>> + Send + Sync,
     Rec: Recombinator<[Bitstring; 2], Output = Bitstring> + Send + Sync,
     Mut: Mutator<Bitstring> + Send + Sync,
@@ -63,6 +63,8 @@ where
     Sel::Error: std::error::Error + Send + Sync + 'static,
     Rec::Error: std::error::Error + Send + Sync + 'static,
     Mut::Error: std::error::Error + Send + Sync + 'static,
+    // Inspector
+    Ins: FnMut(usize, &Vec<EcIndividual<Bitstring, Scorer::Score>>),
 {
     /// # Errors
     ///
@@ -71,7 +73,7 @@ where
     ///    - The population is empty at some point, so `Best::select` fails (this should
     ///      never happen)
     ///    - Creating a new generation fails, probably in creating or scoring new individuals
-    pub fn execute(self) -> anyhow::Result<Vec<EcIndividual<Bitstring, Scorer::Score>>> {
+    pub fn execute(mut self) -> anyhow::Result<Vec<EcIndividual<Bitstring, Scorer::Score>>> {
         let mut rng = rng();
 
         // Create the initial population for the run
@@ -93,30 +95,22 @@ where
             .wrap::<GenomeScorer<_, _>>(&self.scorer);
 
         let mut generation = Generation::new(child_maker, population);
-        let mut best_score = Scorer::Score::default();
 
         for generation_number in 0..self.max_generations {
-            println!("Generation {generation_number}");
-            let best = Best.select(generation.population(), &mut rng)?;
-            if best.test_results > best_score {
-                best_score = best.test_results.clone();
+            if let Some(inspector) = &mut self.inspector {
+                inspector(generation_number, generation.population());
             }
-            println!("   Best score: {:?}", best.test_results);
-            println!("   Entropy: {:?}", Self::entropy(generation.population()));
             match self.parallel_evaluation {
                 true => generation.par_next()?,
                 false => generation.serial_next()?,
             }
         }
 
-        let best = Best.select(generation.population(), &mut rng)?;
-        println!("   Best score: {:?}", best.test_results);
-        println!("   Entropy: {:?}", Self::entropy(generation.population()));
-        println!("   Best overall: {best_score:?}");
+        if let Some(inspector) = &mut self.inspector {
+            inspector(self.max_generations, generation.population());
+        }
 
-        // When we add `Generation::into_population()` we should use that here,
-        // avoiding the call to `.clone()`.
-        Ok(generation.population().clone())
+        Ok(generation.into_population())
     }
 
     fn initial_population(
