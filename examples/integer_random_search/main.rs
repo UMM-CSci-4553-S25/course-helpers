@@ -1,9 +1,4 @@
-use course_helpers::{
-    processor::{
-        min_max_distance::MinMaxDistance, print_best_solutions::PrintBestSolution, Processor,
-    },
-    random_search::{RandomSearch, RandomSearchError},
-};
+use course_helpers::random_search::{RandomSearch, RandomSearchError};
 use ec_core::individual::scorer::FnScorer;
 
 fn print_best((sample_number, genome, score): (usize, i64, u64)) {
@@ -28,15 +23,19 @@ fn main() -> Result<(), RandomSearchError> {
         .num_to_search(num_to_create)
         .genome_maker(genome_maker)
         .scorer(scorer)
-        .inspector(|sample_number, genome, score| match best {
-            None => {
-                best = Some((sample_number, genome.clone(), score));
-                print_best(best.unwrap());
-            }
-            Some((_, _, best_score)) => {
-                if score < best_score {
-                    best = Some((sample_number, genome.clone(), score));
-                    print_best(best.unwrap());
+        .inspector(|solution_chunk| {
+            for &(sample_number, genome, score) in solution_chunk {
+                match best {
+                    None => {
+                        best = Some((sample_number, genome.clone(), score));
+                        print_best(best.unwrap());
+                    }
+                    Some((_, _, best_score)) => {
+                        if score < best_score {
+                            best = Some((sample_number, genome.clone(), score));
+                            print_best(best.unwrap());
+                        }
+                    }
                 }
             }
         })
