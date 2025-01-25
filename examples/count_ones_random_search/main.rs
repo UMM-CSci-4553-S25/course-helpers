@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use course_helpers::random_search::{RandomSearch, RandomSearchError};
 use ec_core::{
     distributions::collection::ConvertToCollectionGenerator,
@@ -13,9 +15,9 @@ pub fn count_ones(bits: &[bool]) -> TestResults<Score<u64>> {
 }
 
 fn main() -> Result<(), RandomSearchError> {
-    let num_to_create = 100_000_000;
+    let num_to_create = 1_000_000;
 
-    let num_bits = 128;
+    let num_bits = 10;
 
     let scorer = FnScorer(|bitstring: &Bitstring| count_ones(&bitstring.bits));
 
@@ -31,7 +33,7 @@ fn main() -> Result<(), RandomSearchError> {
         .inspector(|solution_chunk| {
             update_best(&mut best, solution_chunk);
         })
-        .parallel_search(false)
+        .parallel_search(true)
         .build();
 
     random_search.search()?;
@@ -40,10 +42,11 @@ fn main() -> Result<(), RandomSearchError> {
 }
 
 // We clearly don't want to copy these in lots of files – where should we put them?
-fn update_best(
-    best: &mut Option<(usize, Bitstring, TestResults<Score<u64>>)>,
-    solution_chunk: &[(usize, Bitstring, TestResults<Score<u64>>)],
-) {
+fn update_best<Ge, Sc>(best: &mut Option<(usize, Ge, Sc)>, solution_chunk: &[(usize, Ge, Sc)])
+where
+    Ge: Clone + Display,
+    Sc: Clone + Display + PartialOrd,
+{
     for (sample_number, genome, score) in solution_chunk {
         match best {
             None => {
@@ -62,7 +65,11 @@ fn update_best(
     }
 }
 
-fn print_best((sample_number, genome, score): &(usize, Bitstring, TestResults<Score<u64>>)) {
+fn print_best<Ge, Sc>((sample_number, genome, score): &(usize, Ge, Sc))
+where
+    Ge: Display,
+    Sc: Display,
+{
     println!(
         "New best solution found:  {:25} with error {:25} at sample number {:25}",
         genome, score, sample_number

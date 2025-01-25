@@ -1,10 +1,12 @@
+use std::fmt::Display;
+
 use course_helpers::random_search::{RandomSearch, RandomSearchError};
-use ec_core::individual::scorer::FnScorer;
+use ec_core::{individual::scorer::FnScorer, test_results::Error};
 
 fn main() -> Result<(), RandomSearchError> {
     let num_to_create = 1_000_000;
     let target = 589;
-    let scorer = FnScorer(|value: &i64| value.abs_diff(target));
+    let scorer = FnScorer(|value: &i64| Error(value.abs_diff(target)));
 
     // Create a `Distribution` that generates `i64`s when sampled
     let genome_maker = rand::distr::StandardUniform;
@@ -33,24 +35,35 @@ fn main() -> Result<(), RandomSearchError> {
     Ok(())
 }
 
-fn update_best(best: &mut Option<(usize, i64, u64)>, solution_chunk: &[(usize, i64, u64)]) {
-    for &(sample_number, genome, score) in solution_chunk {
-        match *best {
+// We clearly don't want to copy these in lots of files – where should we put them?
+fn update_best<Ge, Sc>(best: &mut Option<(usize, Ge, Sc)>, solution_chunk: &[(usize, Ge, Sc)])
+where
+    Ge: Clone + Display,
+    Sc: Clone + Display + PartialOrd,
+{
+    for (sample_number, genome, score) in solution_chunk {
+        match best {
             None => {
-                *best = Some((sample_number, genome.clone(), score));
-                print_best(best.unwrap());
+                let new_best = (*sample_number, genome.clone(), score.clone());
+                print_best(&new_best);
+                *best = Some(new_best);
             }
             Some((_, _, best_score)) => {
-                if score < best_score {
-                    *best = Some((sample_number, genome.clone(), score));
-                    print_best(best.unwrap());
+                if score > best_score {
+                    let new_best = (*sample_number, genome.clone(), score.clone());
+                    print_best(&new_best);
+                    *best = Some(new_best);
                 }
             }
         }
     }
 }
 
-fn print_best((sample_number, genome, score): (usize, i64, u64)) {
+fn print_best<Ge, Sc>((sample_number, genome, score): &(usize, Ge, Sc))
+where
+    Ge: Display,
+    Sc: Display,
+{
     println!(
         "New best solution found:  {:25} with error {:25} at sample number {:25}",
         genome, score, sample_number
