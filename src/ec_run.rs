@@ -27,6 +27,10 @@ use std::fmt::Debug;
 
 #[derive(Builder)]
 pub struct Run<Scorer, Sel, Rec, Mut, Ins>
+// You typically wouldn't put all these constraints on the struct itself, instead
+// you'd put them on the `impl` block for the struct. But I'm doing it here to
+// make the constraints more visible and (hopefully) make some of the error
+// messages more helpful for people new to Rust.
 where
     Scorer: IndividualScorer<Bitstring> + Send + Sync,
     Scorer::Score: Debug + Send + Sync + Ord,
