@@ -4,7 +4,6 @@ use bon::Builder;
 use ec_core::individual::scorer::Scorer;
 use rand::{prelude::Distribution, rng};
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
-// use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 #[derive(Debug)]
 pub struct RandomSearchError {}
@@ -23,6 +22,14 @@ where
     // The number of this particular genome, the genome, and its score.
     Ins: FnMut(&[(usize, Ge, Sc)]) + Sync + Send,
 {
+    // We need `PhantomData` because `RandomSearch` depends on the type `Ge` but doesn't
+    // actually contain an instance of it. This is a way to tell Rust that `Ge`
+    // is a type that we care about, but we don't actually have an instance of.
+    // The `builder(field)` attribute tells the `Builder` derive macro that this
+    // is a field that is _not_ specified in the build process.
+    #[builder(field)]
+    _p: PhantomData<Ge>,
+
     #[builder(default = 1_000)]
     num_to_search: usize,
 
@@ -32,11 +39,6 @@ where
     genome_maker: GM,
     scorer: Scr,
     inspector: Ins,
-
-    // We need this because `RandomSearch` depends on the type `Ge` but doesn't
-    // actually contain an instance of it. This is a way to tell Rust that `Ge`
-    // is a type that we care about, but we don't actually have an instance of.
-    _genome: Option<PhantomData<Ge>>,
 }
 
 impl<Ge, GM, Sc, Scr, Ins> RandomSearch<Ge, GM, Sc, Scr, Ins>

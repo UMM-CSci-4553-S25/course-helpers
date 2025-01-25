@@ -17,7 +17,7 @@ pub fn count_ones(bits: &[bool]) -> TestResults<Score<u64>> {
 fn main() -> Result<(), RandomSearchError> {
     let num_to_create = 1_000_000;
 
-    let num_bits = 10;
+    let num_bits = 32;
 
     let scorer = FnScorer(|bitstring: &Bitstring| count_ones(&bitstring.bits));
 
