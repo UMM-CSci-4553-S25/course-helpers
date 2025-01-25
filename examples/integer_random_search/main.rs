@@ -1,13 +1,6 @@
 use course_helpers::random_search::{RandomSearch, RandomSearchError};
 use ec_core::individual::scorer::FnScorer;
 
-fn print_best((sample_number, genome, score): (usize, i64, u64)) {
-    println!(
-        "New best solution found:  {:25} with error {:25} at sample number {:25}",
-        genome, score, sample_number
-    );
-}
-
 fn main() -> Result<(), RandomSearchError> {
     let num_to_create = 1_000_000;
     let target = 589;
@@ -24,23 +17,11 @@ fn main() -> Result<(), RandomSearchError> {
         .genome_maker(genome_maker)
         .scorer(scorer)
         .inspector(|solution_chunk| {
-            for &(sample_number, genome, score) in solution_chunk {
-                match best {
-                    None => {
-                        best = Some((sample_number, genome.clone(), score));
-                        print_best(best.unwrap());
-                    }
-                    Some((_, _, best_score)) => {
-                        if score < best_score {
-                            best = Some((sample_number, genome.clone(), score));
-                            print_best(best.unwrap());
-                        }
-                    }
-                }
-            }
+            update_best(&mut best, solution_chunk);
         })
-        .parallel_search(false)
+        .parallel_search(true)
         .build();
+
     random_search.search()?;
 
     let (best_sample_number, best_genome, best_score) = best.unwrap();
@@ -50,4 +31,28 @@ fn main() -> Result<(), RandomSearchError> {
     );
 
     Ok(())
+}
+
+fn update_best(best: &mut Option<(usize, i64, u64)>, solution_chunk: &[(usize, i64, u64)]) {
+    for &(sample_number, genome, score) in solution_chunk {
+        match *best {
+            None => {
+                *best = Some((sample_number, genome.clone(), score));
+                print_best(best.unwrap());
+            }
+            Some((_, _, best_score)) => {
+                if score < best_score {
+                    *best = Some((sample_number, genome.clone(), score));
+                    print_best(best.unwrap());
+                }
+            }
+        }
+    }
+}
+
+fn print_best((sample_number, genome, score): (usize, i64, u64)) {
+    println!(
+        "New best solution found:  {:25} with error {:25} at sample number {:25}",
+        genome, score, sample_number
+    );
 }
