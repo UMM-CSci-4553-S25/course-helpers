@@ -14,17 +14,17 @@ use std::fmt::Display;
 /// #
 /// let mut best = None;
 ///
-/// let first_chunk = [(0, "a", 5), (1, "b", 8), (2, "c", 9)];
+/// let first_chunk = [&(0, "a", 5), &(1, "b", 8), &(2, "c", 9)];
 /// update_best(&mut best, &first_chunk);
 /// assert_eq!(best, Some((2, "c", 9)));
 ///
-/// let second_chunk = [(3, "d", 2), (4, "e", 11), (5, "f", 4)];
+/// let second_chunk = [&(3, "d", 2), &(4, "e", 11), &(5, "f", 4)];
 /// update_best(&mut best, &second_chunk);
 /// assert_eq!(best, Some((4, "e", 11)));
 /// ```
 pub fn update_best<Genome, Score>(
     current_best: &mut Option<(usize, Genome, Score)>,
-    candidate_solutions: &[(usize, Genome, Score)],
+    candidate_solutions: &[&(usize, Genome, Score)],
 ) where
     Genome: Clone + Display,
     Score: Clone + Display + PartialOrd,
@@ -67,11 +67,11 @@ mod tests {
     fn update_best_test() {
         let mut best = None;
 
-        let first_chunk = [(0, "a", 5), (1, "b", 8), (2, "c", 9)];
+        let first_chunk = [&(0, "a", 5), &(1, "b", 8), &(2, "c", 9)];
         update_best(&mut best, &first_chunk);
         assert_eq!(best, Some((2, "c", 9)));
 
-        let second_chunk = [(3, "d", 2), (4, "e", 11), (5, "f", 4)];
+        let second_chunk = [&(3, "d", 2), &(4, "e", 11), &(5, "f", 4)];
         update_best(&mut best, &second_chunk);
         assert_eq!(best, Some((4, "e", 11)));
     }

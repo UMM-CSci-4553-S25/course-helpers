@@ -3,6 +3,7 @@
         "bitstring",
         "Bitstrings",
         "miette",
-        "recombinator"
+        "recombinator",
+        "thiserror"
     ]
 }
