@@ -1,12 +1,4 @@
-use std::thread;
-
-use course_helpers::{
-    channel_consumer::ChannelConsumer,
-    processor::{
-        min_max_distance::MinMaxDistance, print_best_solutions::PrintBestSolution, Processor,
-    },
-    random_search::{RandomSearch, RandomSearchError},
-};
+use course_helpers::random_search::{RandomSearch, RandomSearchError};
 use ec_core::{
     distributions::collection::ConvertToCollectionGenerator,
     individual::scorer::FnScorer,
@@ -21,33 +13,58 @@ pub fn count_ones(bits: &[bool]) -> TestResults<Score<u64>> {
 }
 
 fn main() -> Result<(), RandomSearchError> {
-    let num_bits = 64;
+    let num_to_create = 100_000_000;
 
-    let channel_capacity = 1_000;
-    let (sender, receiver) = flume::bounded(channel_capacity);
+    let num_bits = 128;
 
-    let num_to_create = 1_000_000;
     let scorer = FnScorer(|bitstring: &Bitstring| count_ones(&bitstring.bits));
-
-    let monitor = PrintBestSolution::default();
-    let summarizer = MinMaxDistance::default();
-
-    let mut all_monitors = (monitor, summarizer);
-
-    let monitor_handle = thread::spawn(move || {
-        all_monitors.consume_all(receiver);
-        all_monitors.finalize_and_print();
-    });
 
     // Create a `Distribution` that generates `Bitstring`s when sampled
     let genome_maker = StandardUniform.into_collection_generator(num_bits);
 
-    let mut random_search = RandomSearch::new(num_to_create, genome_maker, scorer, sender.clone());
-    random_search.run_to_end()?;
+    let mut best = None;
 
-    drop(sender);
+    let mut random_search = RandomSearch::builder()
+        .num_to_search(num_to_create)
+        .genome_maker(genome_maker)
+        .scorer(scorer)
+        .inspector(|solution_chunk| {
+            update_best(&mut best, solution_chunk);
+        })
+        .parallel_search(false)
+        .build();
 
-    monitor_handle.join().unwrap();
+    random_search.search()?;
 
     Ok(())
+}
+
+// We clearly don't want to copy these in lots of files – where should we put them?
+fn update_best(
+    best: &mut Option<(usize, Bitstring, TestResults<Score<u64>>)>,
+    solution_chunk: &[(usize, Bitstring, TestResults<Score<u64>>)],
+) {
+    for (sample_number, genome, score) in solution_chunk {
+        match best {
+            None => {
+                let new_best = (*sample_number, genome.clone(), score.clone());
+                print_best(&new_best);
+                *best = Some(new_best);
+            }
+            Some((_, _, best_score)) => {
+                if score > best_score {
+                    let new_best = (*sample_number, genome.clone(), score.clone());
+                    print_best(&new_best);
+                    *best = Some(new_best);
+                }
+            }
+        }
+    }
+}
+
+fn print_best((sample_number, genome, score): &(usize, Bitstring, TestResults<Score<u64>>)) {
+    println!(
+        "New best solution found:  {:25} with error {:25} at sample number {:25}",
+        genome, score, sample_number
+    );
 }
