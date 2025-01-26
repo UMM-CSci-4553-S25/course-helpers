@@ -38,7 +38,7 @@ fn main() -> Result<(), HillClimberError<GenomeSizeConversionError>> {
         .mutator(WithOneOverLength)
         .scorer(scorer)
         .inspector(|solution_chunk| update_best(&mut best, solution_chunk))
-        .parallel_search(false)
+        // .parallel_search(false)
         .build();
 
     hill_climber.search()?;

@@ -24,7 +24,7 @@ use std::fmt::Display;
 /// ```
 pub fn update_best<Genome, Score>(
     current_best: &mut Option<(usize, Genome, Score)>,
-    candidate_solutions: &[&(usize, Genome, Score)],
+    candidate_solutions: &[(usize, Genome, Score)],
 ) where
     Genome: Clone + Display,
     Score: Clone + Display + PartialOrd,

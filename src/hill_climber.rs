@@ -1,4 +1,5 @@
-use std::{marker::PhantomData, sync::Mutex};
+use core::slice;
+use std::{cmp::Ordering, marker::PhantomData, sync::Mutex};
 
 use bon::Builder;
 use ec_core::{
@@ -7,11 +8,14 @@ use ec_core::{
 };
 use itertools::Itertools;
 use rand::{prelude::Distribution, rng};
-use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
+use rayon::iter::{
+    IndexedParallelIterator, IntoParallelIterator, ParallelBridge, ParallelIterator,
+};
 
 #[derive(Debug, thiserror::Error)]
 pub enum HillClimberError<MutationError> {
     Mutation(#[from] MutationError),
+    ZeroSizedChunk,
 }
 
 #[derive(Debug, Builder)]
@@ -27,7 +31,7 @@ where
     Sc: Ord + PartialOrd + std::fmt::Debug + Sync + Send,
     Scr: Scorer<Ge, Score = Sc> + Sync + Send,
     // The number of this particular genome, the genome, and its score.
-    Ins: FnMut(&[&(usize, Ge, Sc)]) + Sync + Send,
+    Ins: FnMut(&[(usize, Ge, Sc)]) + Sync + Send,
 {
     // We need `PhantomData` because `RandomSearch` depends on the type `Ge` but doesn't
     // actually contain an instance of it. This is a way to tell Rust that `Ge`
@@ -48,9 +52,8 @@ where
     #[builder(default = false)]
     always_replace: bool,
 
-    #[builder(default = true)]
-    parallel_search: bool,
-
+    // #[builder(default = true)]
+    // parallel_search: bool,
     genome_maker: GM,
     mutator: Mut,
     scorer: Scr,
@@ -62,88 +65,98 @@ where
     Ge: Clone + std::fmt::Debug + Sync + Send,
     GM: Distribution<Ge> + Sync + Send,
     Mut: Mutator<Ge> + Sync + Send,
-    Sc: Ord + PartialOrd + std::fmt::Debug + Sync + Send,
+    Sc: Ord + PartialOrd + std::fmt::Debug + Sync + Send + Clone,
     Scr: Scorer<Ge, Score = Sc> + Sync + Send,
     // The number of this particular genome, the genome, and its score.
-    Ins: FnMut(&[&(usize, Ge, Sc)]) + Sync + Send,
+    Ins: FnMut(&[(usize, Ge, Sc)]) + Sync + Send,
 {
     pub fn search(&mut self) -> Result<(), HillClimberError<Mut::Error>> {
         let initial_candidate = self.genome_maker.sample(&mut rng());
-        if self.parallel_search {
-            self.search_parallel(initial_candidate)
-        } else {
-            self.search_sequential(initial_candidate)
-        }
+        self.search_sequential(initial_candidate)
+        // if self.parallel_search {
+        //     self.search_parallel(initial_candidate)
+        // } else {
+        //     self.search_sequential(initial_candidate)
+        // }
     }
 
-    /// Search the given number of samples in parallel.
-    ///
-    /// This function uses Rayon to parallelize the search. Because the `inspector`
-    /// may contain data that must be mutated by each thread in the parallel search
-    /// (e.g., a "best so far" field), the `inspector` is wrapped in a `Mutex` to
-    /// ensure that only one thread can access it at a time. That creates a potential
-    /// bottleneck, but it's a simple way to ensure that the `inspector` is thread-safe.
-    /// We break the search into chunks of 1,000 samples to reduce the number of times
-    /// the `Mutex` is locked and unlocked, reducing the contention.
-    fn search_parallel(
-        &mut self,
-        initial_candidate: Ge,
-    ) -> Result<(), HillClimberError<Mut::Error>> {
-        // // A *little* searching on a simple problem suggests that something like
-        // // 1,000 samples per chunk is a good balance between the overhead of locking
-        // // and the benefit of parallelism. This is a good starting point, but you
-        // // may want to experiment with different chunk sizes.
-        // const CHUNK_SIZE: usize = 1_000;
-        // let inspector = Mutex::new(&mut self.inspector);
-        // (0..self.num_to_search)
-        //     .into_par_iter()
-        //     .chunks(CHUNK_SIZE)
-        //     .for_each(|chunk| {
-        //         let solution_chunk = chunk
-        //             .into_iter()
-        //             .map(|sample_number| {
-        //                 // Generate a random genome as a "solution"
-        //                 let sample = self.genome_maker.sample(&mut rng());
-        //                 // Score the solution
-        //                 let score = self.scorer.score(&sample);
-        //                 (sample_number, sample, score)
-        //             })
-        //             .collect::<Vec<_>>();
-        //         (inspector.lock().unwrap())(&solution_chunk);
-        //     });
+    // /// Search the given number of samples in parallel.
+    // ///
+    // /// This function uses Rayon to parallelize the search. Because the `inspector`
+    // /// may contain data that must be mutated by each thread in the parallel search
+    // /// (e.g., a "best so far" field), the `inspector` is wrapped in a `Mutex` to
+    // /// ensure that only one thread can access it at a time. That creates a potential
+    // /// bottleneck, but it's a simple way to ensure that the `inspector` is thread-safe.
+    // /// We break the search into chunks of 1,000 samples to reduce the number of times
+    // /// the `Mutex` is locked and unlocked, reducing the contention.
+    // fn search_parallel(
+    //     &mut self,
+    //     initial_candidate: Ge,
+    // ) -> Result<(), HillClimberError<Mut::Error>> {
+    //     let mut rng = rand::rng();
 
-        // Ok(())
-        todo!()
-    }
+    //     let initial_score = self.scorer.score(&initial_candidate);
+    //     let mut current_scored_best = (0, initial_candidate, initial_score);
+
+    //     (self.inspector)(slice::from_ref(&current_scored_best));
+
+    //     for indices in &(1..self.num_to_search).chunks(self.num_children_per_step) {
+    //         let best_in_chunk = (&indices)
+    //             .into_iter()
+    //             .par_bridge()
+    //             .map(|sample_number| -> Result<_, HillClimberError<Mut::Error>> {
+    //                 let child = self
+    //                     .mutator
+    //                     .mutate(current_scored_best.1.clone(), &mut rng)?;
+    //                 let score = self.scorer.score(&child);
+    //                 Ok((sample_number, child, score))
+    //             })
+    //             .process_results(|iter| {
+    //                 iter.max_by(|(_, _, first_score), (_, _, second_score)| {
+    //                     first_score.cmp(second_score)
+    //                 })
+    //             })?
+    //             .ok_or(HillClimberError::ZeroSizedChunk)?;
+
+    //         if self.always_replace || best_in_chunk.2 > current_scored_best.2 {
+    //             current_scored_best = best_in_chunk;
+    //             (self.inspector)(slice::from_ref(&current_scored_best));
+    //         }
+    //     }
+
+    //     Ok(())
+    // }
 
     fn search_sequential(
         &mut self,
-        current_candidate: Ge,
+        initial_candidate: Ge,
     ) -> Result<(), HillClimberError<Mut::Error>> {
         let mut rng = rand::rng();
 
-        let current_score = self.scorer.score(&current_candidate);
-        let mut current_scored_best = (0, current_candidate, current_score);
+        let initial_score = self.scorer.score(&initial_candidate);
+        let mut current_scored_best = (0, initial_candidate, initial_score);
+
+        (self.inspector)(slice::from_ref(&current_scored_best));
 
         for indices in &(1..self.num_to_search).chunks(self.num_children_per_step) {
-            let mut best_scored_child = None;
-            for sample_number in indices {
-                let child = self
-                    .mutator
-                    .mutate(current_scored_best.1.clone(), &mut rng)?;
-                let score = self.scorer.score(&child);
-                match best_scored_child {
-                    None => best_scored_child = Some((sample_number, child, score)),
-                    Some((_, _, best_score)) if score > best_score => {
-                        best_scored_child = Some((sample_number, child, score))
-                    }
-                    _ => {}
-                }
-            }
-            let best_scored_child = best_scored_child.unwrap();
-            if self.always_replace || best_scored_child.2 > current_scored_best.2 {
-                current_scored_best = best_scored_child;
-                (self.inspector)(&[&current_scored_best]);
+            let best_in_chunk = indices
+                .map(|sample_number| -> Result<_, HillClimberError<Mut::Error>> {
+                    let child = self
+                        .mutator
+                        .mutate(current_scored_best.1.clone(), &mut rng)?;
+                    let score = self.scorer.score(&child);
+                    Ok((sample_number, child, score))
+                })
+                .process_results(|iter| {
+                    iter.max_by(|(_, _, first_score), (_, _, second_score)| {
+                        first_score.cmp(second_score)
+                    })
+                })?
+                .ok_or(HillClimberError::ZeroSizedChunk)?;
+
+            if self.always_replace || best_in_chunk.2 > current_scored_best.2 {
+                current_scored_best = best_in_chunk;
+                (self.inspector)(slice::from_ref(&current_scored_best));
             }
         }
 
