@@ -1,16 +1,10 @@
 use core::slice;
-use std::{cmp::Ordering, marker::PhantomData, sync::Mutex};
+use std::marker::PhantomData;
 
 use bon::Builder;
-use ec_core::{
-    individual::scorer::Scorer,
-    operator::{mutator::Mutator, selector::best},
-};
+use ec_core::{individual::scorer::Scorer, operator::mutator::Mutator};
 use itertools::Itertools;
 use rand::{prelude::Distribution, rng};
-use rayon::iter::{
-    IndexedParallelIterator, IntoParallelIterator, ParallelBridge, ParallelIterator,
-};
 
 #[derive(Debug, thiserror::Error)]
 pub enum HillClimberError<MutationError> {
