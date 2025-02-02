@@ -8,7 +8,10 @@ use rand::{prelude::Distribution, rng};
 
 #[derive(Debug, thiserror::Error)]
 pub enum HillClimberError<MutationError> {
+    #[error(transparent)]
     Mutation(#[from] MutationError),
+
+    #[error("Processed zero-sized chunk")]
     ZeroSizedChunk,
 }
 
