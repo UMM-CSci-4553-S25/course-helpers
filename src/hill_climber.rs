@@ -46,8 +46,6 @@ where
     #[builder(default = false)]
     always_replace: bool,
 
-    // #[builder(default = true)]
-    // parallel_search: bool,
     genome_maker: GM,
     mutator: Mut,
     scorer: Scr,
@@ -67,59 +65,7 @@ where
     pub fn search(&mut self) -> Result<(), HillClimberError<Mut::Error>> {
         let initial_candidate = self.genome_maker.sample(&mut rng());
         self.search_sequential(initial_candidate)
-        // if self.parallel_search {
-        //     self.search_parallel(initial_candidate)
-        // } else {
-        //     self.search_sequential(initial_candidate)
-        // }
     }
-
-    // /// Search the given number of samples in parallel.
-    // ///
-    // /// This function uses Rayon to parallelize the search. Because the `inspector`
-    // /// may contain data that must be mutated by each thread in the parallel search
-    // /// (e.g., a "best so far" field), the `inspector` is wrapped in a `Mutex` to
-    // /// ensure that only one thread can access it at a time. That creates a potential
-    // /// bottleneck, but it's a simple way to ensure that the `inspector` is thread-safe.
-    // /// We break the search into chunks of 1,000 samples to reduce the number of times
-    // /// the `Mutex` is locked and unlocked, reducing the contention.
-    // fn search_parallel(
-    //     &mut self,
-    //     initial_candidate: Ge,
-    // ) -> Result<(), HillClimberError<Mut::Error>> {
-    //     let mut rng = rand::rng();
-
-    //     let initial_score = self.scorer.score(&initial_candidate);
-    //     let mut current_scored_best = (0, initial_candidate, initial_score);
-
-    //     (self.inspector)(slice::from_ref(&current_scored_best));
-
-    //     for indices in &(1..self.num_to_search).chunks(self.num_children_per_step) {
-    //         let best_in_chunk = (&indices)
-    //             .into_iter()
-    //             .par_bridge()
-    //             .map(|sample_number| -> Result<_, HillClimberError<Mut::Error>> {
-    //                 let child = self
-    //                     .mutator
-    //                     .mutate(current_scored_best.1.clone(), &mut rng)?;
-    //                 let score = self.scorer.score(&child);
-    //                 Ok((sample_number, child, score))
-    //             })
-    //             .process_results(|iter| {
-    //                 iter.max_by(|(_, _, first_score), (_, _, second_score)| {
-    //                     first_score.cmp(second_score)
-    //                 })
-    //             })?
-    //             .ok_or(HillClimberError::ZeroSizedChunk)?;
-
-    //         if self.always_replace || best_in_chunk.2 > current_scored_best.2 {
-    //             current_scored_best = best_in_chunk;
-    //             (self.inspector)(slice::from_ref(&current_scored_best));
-    //         }
-    //     }
-
-    //     Ok(())
-    // }
 
     fn search_sequential(
         &mut self,
