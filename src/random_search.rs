@@ -5,9 +5,6 @@ use ec_core::individual::scorer::Scorer;
 use rand::{prelude::Distribution, rng};
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 
-#[derive(Debug)]
-pub struct RandomSearchError {}
-
 #[derive(Debug, Builder)]
 pub struct RandomSearch<Ge, GM, Sc, Scr, Ins>
 // You typically wouldn't put all these constraints on the struct itself, instead
@@ -50,7 +47,7 @@ where
     // The number of this particular genome, the genome, and its score.
     Ins: FnMut(&[(usize, Ge, Sc)]) + Sync + Send,
 {
-    pub fn search(&mut self) -> Result<(), RandomSearchError> {
+    pub fn search(&mut self) {
         if self.parallel_search {
             self.search_parallel()
         } else {
@@ -67,7 +64,7 @@ where
     /// bottleneck, but it's a simple way to ensure that the `inspector` is thread-safe.
     /// We break the search into chunks of 1,000 samples to reduce the number of times
     /// the `Mutex` is locked and unlocked, reducing the contention.
-    fn search_parallel(&mut self) -> Result<(), RandomSearchError> {
+    fn search_parallel(&mut self) {
         // A *little* searching on a simple problem suggests that something like
         // 1,000 samples per chunk is a good balance between the overhead of locking
         // and the benefit of parallelism. This is a good starting point, but you
@@ -90,11 +87,9 @@ where
                     .collect::<Vec<_>>();
                 (inspector.lock().unwrap())(&solution_chunk);
             });
-
-        Ok(())
     }
 
-    fn search_sequential(&mut self) -> Result<(), RandomSearchError> {
+    fn search_sequential(&mut self) {
         for sample_number in 0..self.num_to_search {
             // Generate a random genome as a "solution"
             let sample = self.genome_maker.sample(&mut rng());
@@ -102,7 +97,5 @@ where
             let score = self.scorer.score(&sample);
             (self.inspector)(&[(sample_number, sample.clone(), score)]);
         }
-
-        Ok(())
     }
 }

@@ -1,7 +1,4 @@
-use course_helpers::{
-    inspector::update_best,
-    random_search::{RandomSearch, RandomSearchError},
-};
+use course_helpers::{inspector::update_best, random_search::RandomSearch};
 use ec_core::{
     distributions::collection::ConvertToCollectionGenerator,
     individual::scorer::FnScorer,
@@ -15,7 +12,7 @@ pub fn count_ones(bits: &[bool]) -> TestResults<Score<u64>> {
     bits.iter().copied().map(u64::from).collect()
 }
 
-fn main() -> Result<(), RandomSearchError> {
+fn main() {
     let num_to_create = 1_000_000;
 
     let num_bits = 32;
@@ -37,7 +34,5 @@ fn main() -> Result<(), RandomSearchError> {
         .parallel_search(true)
         .build();
 
-    random_search.search()?;
-
-    Ok(())
+    random_search.search();
 }
