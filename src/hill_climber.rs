@@ -22,13 +22,13 @@ pub struct HillClimber<Ge, GM, Mut, Sc, Scr, Ins>
 // make the constraints more visible and (hopefully) make some of the error
 // messages more helpful for people new to Rust.
 where
-    Ge: Clone + std::fmt::Debug + Sync + Send,
-    GM: Distribution<Ge> + Sync + Send,
-    Mut: Mutator<Ge> + Sync + Send,
-    Sc: Ord + PartialOrd + std::fmt::Debug + Sync + Send,
-    Scr: Scorer<Ge, Score = Sc> + Sync + Send,
+    Ge: Clone,
+    GM: Distribution<Ge>,
+    Mut: Mutator<Ge>,
+    Sc: Ord + PartialOrd,
+    Scr: Scorer<Ge, Score = Sc>,
     // The number of this particular genome, the genome, and its score.
-    Ins: FnMut(&[(usize, Ge, Sc)]) + Sync + Send,
+    Ins: FnMut(&[(usize, Ge, Sc)]),
 {
     // We need `PhantomData` because `RandomSearch` depends on the type `Ge` but doesn't
     // actually contain an instance of it. This is a way to tell Rust that `Ge`
@@ -57,13 +57,13 @@ where
 
 impl<Ge, GM, Mut, Sc, Scr, Ins> HillClimber<Ge, GM, Mut, Sc, Scr, Ins>
 where
-    Ge: Clone + std::fmt::Debug + Sync + Send,
-    GM: Distribution<Ge> + Sync + Send,
-    Mut: Mutator<Ge> + Sync + Send,
-    Sc: Ord + PartialOrd + std::fmt::Debug + Sync + Send + Clone,
-    Scr: Scorer<Ge, Score = Sc> + Sync + Send,
+    Ge: Clone,
+    GM: Distribution<Ge>,
+    Mut: Mutator<Ge>,
+    Sc: Ord + PartialOrd + Clone,
+    Scr: Scorer<Ge, Score = Sc>,
     // The number of this particular genome, the genome, and its score.
-    Ins: FnMut(&[(usize, Ge, Sc)]) + Sync + Send,
+    Ins: FnMut(&[(usize, Ge, Sc)]),
 {
     pub fn search(&mut self) -> Result<(), HillClimberError<Mut::Error>> {
         let initial_candidate = self.genome_maker.sample(&mut rng());
