@@ -1,16 +1,14 @@
-use course_helpers::{
-    inspector::update_best,
-    random_search::{RandomSearch, RandomSearchError},
-};
+use course_helpers::{inspector::update_best, random_search::RandomSearch};
 use ec_core::{individual::scorer::FnScorer, test_results::Error};
+use rand::distr::StandardUniform;
 
-fn main() -> Result<(), RandomSearchError> {
+fn main() {
     let num_to_create = 1_000_000;
     let target = 589;
-    let scorer = FnScorer(|value: &i64| Error(value.abs_diff(target)));
+    let scorer = FnScorer(|value: &i32| Error(value.abs_diff(target)));
 
     // Create a `Distribution` that generates `i64`s when sampled
-    let genome_maker = rand::distr::StandardUniform;
+    let genome_maker = StandardUniform;
 
     let mut best = None;
 
@@ -25,13 +23,11 @@ fn main() -> Result<(), RandomSearchError> {
         .parallel_search(true)
         .build();
 
-    random_search.search()?;
+    random_search.search();
 
     let (best_sample_number, best_genome, best_score) = best.unwrap();
     println!(
         "Best solution found: sample_number: {}, genome: {:?}, score: {}",
         best_sample_number, best_genome, best_score
     );
-
-    Ok(())
 }
