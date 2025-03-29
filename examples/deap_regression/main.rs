@@ -10,7 +10,7 @@ use clap::Parser;
 use ec_core::{
     distributions::collection::ConvertToCollectionGenerator,
     generation::Generation,
-    individual::{ec::WithScorer, scorer::FnScorer},
+    individual::{ec::WithScorer, scorer::FnScorer, Individual},
     operator::{
         genome_extractor::GenomeExtractor,
         genome_scorer::GenomeScorer,
@@ -18,7 +18,7 @@ use ec_core::{
         selector::{best::Best, lexicase::Lexicase, tournament::Tournament, Select, Selector},
         Composable,
     },
-    test_results::{self, TestResults},
+    test_results::{self, Error, TestResults},
     uniform_distribution_of,
 };
 use ec_linear::mutator::umad::Umad;
@@ -31,7 +31,7 @@ use push::{
     instruction::{variable_name::VariableName, FloatInstruction, PushInstruction},
     push_vm::{program::PushProgram, push_state::PushState, HasStack, State},
 };
-use rand::{prelude::Distribution, rng};
+use rand::{prelude::Distribution, rng, Rng};
 
 use crate::args::{CliArgs, RunModel};
 
@@ -106,6 +106,44 @@ fn score_genome(
         .collect()
 }
 
+fn drop_random_instruction(genome: &Plushy, rng: &mut rand::prelude::ThreadRng) -> Plushy {
+    let mut genes = genome.get_genes();
+    let index = rng.random_range(0..genes.len());
+    genes.remove(index);
+    Plushy::new(genes)
+}
+
+fn nearly_equal_scores(
+    first: &TestResults<Error<Of64>>,
+    second: &TestResults<Error<Of64>>,
+) -> bool {
+    let allowable_diff: Of64 = Of64::from(0.00001);
+
+    for (x, y) in first.results.iter().zip(second.results.iter()) {
+        if (x.0 - y.0).abs() > allowable_diff {
+            return false;
+        }
+    }
+    true
+}
+
+fn simplify_genome(
+    mut genome: Plushy,
+    training_cases: &Cases<Of64>,
+    num_simplifications: usize,
+) -> Plushy {
+    let original_score = score_genome(&genome, training_cases);
+    let mut rng = rng();
+    for _ in 0..num_simplifications {
+        let possible_simplification = drop_random_instruction(&genome, &mut rng);
+        let new_score = score_genome(&possible_simplification, training_cases);
+        if nearly_equal_scores(&original_score, &new_score) {
+            genome = possible_simplification;
+        }
+    }
+    genome
+}
+
 fn main() -> miette::Result<()> {
     // FIXME: Respect the max_genome_length input
     let CliArgs {
@@ -166,7 +204,7 @@ fn main() -> miette::Result<()> {
         "An initial populaiton is always required"
     );
 
-    let best = Best.select(&population, &mut rng)?;
+    let mut best = Best.select(&population, &mut rng)?.clone();
     println!("Best initial individual is {best}");
 
     // Use the UMAD (Uniform Mutation through Addition and Deletion) mutation operator.
@@ -190,16 +228,29 @@ fn main() -> miette::Result<()> {
             RunModel::Parallel => generation.par_next()?,
         }
 
-        let best = Best.select(generation.population(), &mut rng)?;
+        best = Best.select(generation.population(), &mut rng)?.clone();
         // TODO: Change 2 to be the smallest number of digits needed for
         // max_generations-1.
         println!("Generation {generation_number:2} best is {best}");
 
+        // TODO: DEAP doesn't have early exit, so I should probably remove this when
+        // doing timing comparisons. That said, requiring an exact match to 0.0 probably
+        // means a lot of things that are clearly "close enough" in floating point land
+        // won't stop early. I've seen, for example, runs where the MSE is
+        //    0.00000000000000000000000000000011709654061874394
+        // and which didn't stop early, because that's not actually 0.
         if best.test_results.total_result.0 == OrderedFloat(0.0) {
             println!("SUCCESS");
             break;
         }
     }
+
+    // TODO: This should also be removed (or the number of simplifications set to 0) when
+    // doing timing comparisons since DEAP doesn't do anything like simplification.
+    const NUM_SIMPLIFICATIONS: usize = 1_000;
+    let simplified_best =
+        simplify_genome(best.genome().clone(), &training_cases, NUM_SIMPLIFICATIONS);
+    println!("Simplified best is {simplified_best}");
 
     Ok(())
 }
