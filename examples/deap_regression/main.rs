@@ -15,7 +15,7 @@ use ec_core::{
         genome_extractor::GenomeExtractor,
         genome_scorer::GenomeScorer,
         mutator::Mutate,
-        selector::{best::Best, lexicase::Lexicase, Select, Selector},
+        selector::{best::Best, lexicase::Lexicase, tournament::Tournament, Select, Selector},
         Composable,
     },
     test_results::{self, TestResults},
@@ -45,6 +45,7 @@ use crate::args::{CliArgs, RunModel};
 // "return" value on the appropriate stack at the end of its execution.
 const PENALTY_VALUE: f64 = 1_000.0;
 
+// Just so we don't have to type "OrderedFloat<f64>" over and over…
 type Of64 = OrderedFloat<f64>;
 
 /// The target polynomial is x^4 + x^3 + x^2 + x
@@ -52,6 +53,9 @@ fn target_fn(input: Of64) -> Of64 {
     input.powi(4) + input.powi(3) + input.powi(2) + input
 }
 
+// This is used to build the initial state of the Push interpreter.
+// It will have the given program on the exec stack and have the
+// input variable `x` associated with the given `input` value.
 fn build_push_state(
     program: impl DoubleEndedIterator<Item = PushProgram> + ExactSizeIterator,
     input: Of64,
@@ -135,7 +139,16 @@ fn main() -> miette::Result<()> {
      */
     let scorer = FnScorer(|genome: &Plushy| score_genome(genome, &training_cases));
 
-    let selector = Lexicase::new(training_cases.len());
+    // Switching from tournament selection to lexicase selection will allow for better high success
+    // rates even if you start with very small initial programs (e.g., length 1), which can increase
+    // readability of the results even without simplification.
+
+    // let selector = Lexicase::new(training_cases.len());
+    // This uses a higher tournament size (10) than that used in DEAP (which uses 3). Populations
+    // of Push programs tend to have a higher diversity of behaviors than populations of trees,
+    // so here we apparently need a higher tournament size to ensure we're selecting and maintaining
+    // the best individuals. I think that adding elitism would accomplish much the same thing.
+    let selector = Tournament::of_size::<10>();
 
     let gene_generator = uniform_distribution_of![<PushInstruction>
         FloatInstruction::Add,
