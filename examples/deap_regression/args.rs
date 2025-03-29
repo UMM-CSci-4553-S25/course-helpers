@@ -19,7 +19,7 @@ pub struct CliArgs {
     pub population_size: usize,
 
     /// Maximum number of initial instructions
-    #[clap(short = 'i', long, value_parser, default_value_t = 75)]
+    #[clap(short = 'i', long, value_parser, default_value_t = 30)]
     pub max_initial_instructions: usize,
 
     /// Maximum genome length

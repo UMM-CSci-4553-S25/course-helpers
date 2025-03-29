@@ -86,7 +86,7 @@ fn score_program(
     };
 
     // Square the error
-    (answer - output).abs()
+    (answer - output).powi(2)
 }
 
 fn score_genome(
