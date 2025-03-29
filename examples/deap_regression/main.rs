@@ -117,17 +117,9 @@ fn main() -> miette::Result<()> {
 
     let mut rng = rng();
 
-    // Inputs from -4 (inclusive) to 4 (exclusive) in increments of 0.25.
-    let training_cases = (-4 * 4..4 * 4)
-        .map(|n| Of64::from(n) / 4.0)
-        .with_target_fn(|&i| target_fn(i));
-
-    // The range want is -4 1/8, -3 7/8, -3 5/8, ..., 3 7/8, 4 1/8.
-    // I have to multiply that by 8 to get integer values, so:
-    // -33, -31, -29, ..., 31, 33.
-    let _testing_cases = (-33..=33)
-        .step_by(2)
-        .map(|n| Of64::from(n) / 8.0)
+    // Inputs from -1 (inclusive) to 1 (exclusive) in increments of 0.1.
+    let training_cases = (-10..10)
+        .map(|n| Of64::from(n) / 10.0)
         .with_target_fn(|&i| target_fn(i));
 
     /*
