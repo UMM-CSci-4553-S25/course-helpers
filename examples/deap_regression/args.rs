@@ -15,18 +15,18 @@ pub struct CliArgs {
     pub run_model: RunModel,
 
     /// Population size
-    #[clap(short, long, value_parser, default_value_t = 100)]
+    #[clap(short, long, value_parser, default_value_t = 300)]
     pub population_size: usize,
 
     /// Maximum number of initial instructions
-    #[clap(short = 'i', long, value_parser, default_value_t = 50)]
+    #[clap(short = 'i', long, value_parser, default_value_t = 75)]
     pub max_initial_instructions: usize,
 
     /// Maximum genome length
-    #[clap(short, long, value_parser, default_value_t = 100)]
+    #[clap(short, long, value_parser, default_value_t = 1000)]
     pub max_genome_length: usize,
 
     /// Number of generations to run
-    #[clap(short = 'g', long, value_parser, default_value_t = 100)]
+    #[clap(short = 'g', long, value_parser, default_value_t = 40)]
     pub max_generations: usize,
 }
