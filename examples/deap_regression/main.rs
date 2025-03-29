@@ -73,6 +73,7 @@ fn build_push_state(
         .build()
 }
 
+// Score the given `program` on the given `input`/`output` pair.
 fn score_program(
     program: impl DoubleEndedIterator<Item = PushProgram> + ExactSizeIterator,
     Case { input, output }: Case<Of64>,
@@ -168,6 +169,9 @@ fn main() -> miette::Result<()> {
     let best = Best.select(&population, &mut rng)?;
     println!("Best initial individual is {best}");
 
+    // Use the UMAD (Uniform Mutation through Addition and Deletion) mutation operator.
+    // We don't have any crossover operator set up for Push at the moment, so we'll just
+    // use mutation.
     let umad = Umad::new(0.1, 0.1, &gene_generator);
 
     let make_new_individual = Select::new(selector)
