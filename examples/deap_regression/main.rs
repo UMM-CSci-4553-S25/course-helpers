@@ -7,10 +7,11 @@
 pub mod args;
 
 use clap::Parser;
+use course_helpers::simplifier::{drop_one::DropOne, Simplifier};
 use ec_core::{
     distributions::collection::ConvertToCollectionGenerator,
     generation::Generation,
-    individual::{ec::WithScorer, scorer::FnScorer, Individual},
+    individual::{ec::WithScorer, scorer::FnScorer},
     operator::{
         genome_extractor::GenomeExtractor,
         genome_scorer::GenomeScorer,
@@ -18,7 +19,7 @@ use ec_core::{
         selector::{best::Best, lexicase::Lexicase, tournament::Tournament, Select, Selector},
         Composable,
     },
-    test_results::{self, Error, TestResults},
+    test_results::{self, TestResults},
     uniform_distribution_of,
 };
 use ec_linear::mutator::umad::Umad;
@@ -31,7 +32,7 @@ use push::{
     instruction::{variable_name::VariableName, FloatInstruction, PushInstruction},
     push_vm::{program::PushProgram, push_state::PushState, HasStack, State},
 };
-use rand::{prelude::Distribution, rng, Rng};
+use rand::{prelude::Distribution, rng};
 
 use crate::args::{CliArgs, RunModel};
 
@@ -104,44 +105,6 @@ fn score_genome(
         .iter()
         .map(|&case| score_program(program.iter().cloned(), case))
         .collect()
-}
-
-fn drop_random_instruction(genome: &Plushy, rng: &mut rand::prelude::ThreadRng) -> Plushy {
-    let mut genes = genome.get_genes();
-    let index = rng.random_range(0..genes.len());
-    genes.remove(index);
-    Plushy::new(genes)
-}
-
-fn nearly_equal_scores(
-    first: &TestResults<Error<Of64>>,
-    second: &TestResults<Error<Of64>>,
-) -> bool {
-    let allowable_diff: Of64 = Of64::from(0.00001);
-
-    for (x, y) in first.results.iter().zip(second.results.iter()) {
-        if (x.0 - y.0).abs() > allowable_diff {
-            return false;
-        }
-    }
-    true
-}
-
-fn simplify_genome(
-    mut genome: Plushy,
-    training_cases: &Cases<Of64>,
-    num_simplifications: usize,
-) -> Plushy {
-    let original_score = score_genome(&genome, training_cases);
-    let mut rng = rng();
-    for _ in 0..num_simplifications {
-        let possible_simplification = drop_random_instruction(&genome, &mut rng);
-        let new_score = score_genome(&possible_simplification, training_cases);
-        if nearly_equal_scores(&original_score, &new_score) {
-            genome = possible_simplification;
-        }
-    }
-    genome
 }
 
 fn main() -> miette::Result<()> {
@@ -245,11 +208,11 @@ fn main() -> miette::Result<()> {
         }
     }
 
+    let drop_one_simplifier = DropOne::new(scorer, 10_000, 0.000_000_1);
+
     // TODO: This should also be removed (or the number of simplifications set to 0) when
     // doing timing comparisons since DEAP doesn't do anything like simplification.
-    const NUM_SIMPLIFICATIONS: usize = 1_000;
-    let simplified_best =
-        simplify_genome(best.genome().clone(), &training_cases, NUM_SIMPLIFICATIONS);
+    let simplified_best = drop_one_simplifier.simplify_genome(best.genome.clone(), &mut rng);
     println!("Simplified best is {simplified_best}");
 
     Ok(())
