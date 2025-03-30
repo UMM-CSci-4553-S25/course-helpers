@@ -2,8 +2,11 @@
     "cSpell.words": [
         "bitstring",
         "Bitstrings",
+        "DEAP",
+        "lexicase",
         "miette",
         "recombinator",
-        "thiserror"
+        "thiserror",
+        "UMAD"
     ]
 }

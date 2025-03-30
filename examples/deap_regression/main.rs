@@ -164,7 +164,7 @@ fn main() -> miette::Result<()> {
 
     ensure!(
         !population.is_empty(),
-        "An initial populaiton is always required"
+        "An initial population is always required"
     );
 
     let mut best = Best.select(&population, &mut rng)?.clone();
@@ -208,10 +208,10 @@ fn main() -> miette::Result<()> {
         }
     }
 
-    let drop_one_simplifier = DropOne::new(scorer, 10_000, 0.000_000_1);
-
     // TODO: This should also be removed (or the number of simplifications set to 0) when
     // doing timing comparisons since DEAP doesn't do anything like simplification.
+
+    let drop_one_simplifier = DropOne::new(scorer, 10_000, 0.000_000_1);
     let simplified_best = drop_one_simplifier.simplify_genome(best.genome.clone(), &mut rng);
     println!("Simplified best is {simplified_best}");
 
