@@ -1,25 +1,34 @@
+use std::ops::Sub;
+
 use ec_core::{
     individual::scorer::Scorer,
     population::Population,
     test_results::{self, TestResults},
 };
+use num_traits::{abs_sub, Signed};
 use ordered_float::OrderedFloat;
 use push::genome::plushy::Plushy;
 use rand::Rng;
 
 use super::Simplifier;
 
-pub struct DropOne<S> {
+pub struct DropOne<S, Score>
+where
+    Score: Eq + Ord,
+{
     scorer: S,
     num_simplification_attempts: usize,
-    acceptable_single_error_difference: f64,
+    acceptable_single_error_difference: Score,
 }
 
-impl<S> DropOne<S> {
+impl<S, Score> DropOne<S, Score>
+where
+    Score: Eq + Ord + Sub + Signed + Copy,
+{
     pub fn new(
         scorer: S,
         num_simplification_attempts: usize,
-        acceptable_single_error_difference: f64,
+        acceptable_single_error_difference: Score,
     ) -> Self {
         Self {
             scorer,
@@ -44,11 +53,11 @@ impl<S> DropOne<S> {
     // TODO: Should this move to `TestResults`?
     fn nearly_equal_scores(
         &self,
-        first: &TestResults<test_results::Error<OrderedFloat<f64>>>,
-        second: &TestResults<test_results::Error<OrderedFloat<f64>>>,
+        first: &TestResults<test_results::Error<Score>>,
+        second: &TestResults<test_results::Error<Score>>,
     ) -> bool {
         for (x, y) in first.results.iter().zip(second.results.iter()) {
-            if (x.0 - y.0).abs() > self.acceptable_single_error_difference {
+            if abs_sub(x.0, y.0) > self.acceptable_single_error_difference {
                 return false;
             }
         }
@@ -56,9 +65,10 @@ impl<S> DropOne<S> {
     }
 }
 
-impl<S> Simplifier<Plushy> for DropOne<S>
+impl<S, Score> Simplifier<Plushy> for DropOne<S, Score>
 where
-    S: Scorer<Plushy, Score = TestResults<test_results::Error<OrderedFloat<f64>>>>,
+    S: Scorer<Plushy, Score = TestResults<test_results::Error<Score>>>,
+    Score: Eq + Ord + Sub + Signed + Copy,
 {
     fn simplify_genome<R: Rng>(&self, mut genome: Plushy, rng: &mut R) -> Plushy {
         let original_score = self.scorer.score(&genome);
