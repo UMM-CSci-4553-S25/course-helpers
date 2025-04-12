@@ -310,6 +310,7 @@ dependencies = [
  "push",
  "rand 0.9.0",
  "rayon",
+ "strsim",
  "thiserror 2.0.12",
 ]
 
@@ -423,9 +424,9 @@ checksum = "72852736692ec862655eca398c9bb1b476161b563c9f80f45f4808b9629750d6"
 
 [[package]]
 name = "ec-core"
-version = "0.1.0-course.3"
+version = "0.1.0-course.4"
 source = "registry+https://github.com/UMM-CSci-4553-S25/registry.git"
-checksum = "767cfb7cf1887768f0082e82c058b3182b3105ec09e31ba3cfc743c7a77ebc09"
+checksum = "b68009dad8d8852af29b4b4dd459fa16b73c5c2f30f0a65f42199366f632dbf4"
 dependencies = [
  "ec_macros",
  "itertools 0.13.0",
@@ -441,9 +442,9 @@ dependencies = [
 
 [[package]]
 name = "ec-linear"
-version = "0.1.0-course.3"
+version = "0.1.0-course.4"
 source = "registry+https://github.com/UMM-CSci-4553-S25/registry.git"
-checksum = "63de2163be3587aade3de1e5f954d234bde69b62a7c12e909c8307625f006e2c"
+checksum = "f3f29c71a84e0c5ab6161f6d4ce0e5c125d2af4facdfc7620af33336c2ad9069"
 dependencies = [
  "ec-core",
  "miette",
@@ -455,9 +456,9 @@ dependencies = [
 
 [[package]]
 name = "ec_macros"
-version = "0.1.0-course.3"
+version = "0.1.0-course.4"
 source = "registry+https://github.com/UMM-CSci-4553-S25/registry.git"
-checksum = "b48393e720ae1da6fdf210189cefc6006725ace67da5edfc97f88d8528b5fe0f"
+checksum = "140b310f26ccb9aa11e0640111a53309cd71c68cc5a3732bbd6c38989e5a1a52"
 dependencies = [
  "manyhow",
  "proc-macro2",
@@ -865,9 +866,9 @@ checksum = "d6790f58c7ff633d8771f42965289203411a5e5c68388703c06e14f24770b41e"
 
 [[package]]
 name = "ordered-float"
-version = "4.6.0"
+version = "5.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7bb71e1b3fa6ca1c61f383464aaf2bb0e2f8e772a1f01d486832464de363b951"
+checksum = "e2c1f9f56e534ac6a9b8a4600bdf0f530fb393b5f393e7b4d03489c3cf0c3f01"
 dependencies = [
  "num-traits",
  "proptest",
@@ -991,9 +992,9 @@ dependencies = [
 
 [[package]]
 name = "push"
-version = "0.1.0-course.3"
+version = "0.1.0-course.4"
 source = "registry+https://github.com/UMM-CSci-4553-S25/registry.git"
-checksum = "3bc6598af1d7f90d58720560aa4b377cf5156b92bb5c40b7bd055134db4a7d00"
+checksum = "d5c853b428c0701cc4abc5de53c377f38365112802e25c52ee9a2ff37513dc7d"
 dependencies = [
  "collectable",
  "criterion",
@@ -1015,9 +1016,9 @@ dependencies = [
 
 [[package]]
 name = "push_macros"
-version = "0.1.0-course.3"
+version = "0.1.0-course.4"
 source = "registry+https://github.com/UMM-CSci-4553-S25/registry.git"
-checksum = "d8c1195184c74a7690eec945794cea28957a3b0d9a54462e74e6baf6e9780b07"
+checksum = "5bc4612abe60f0a022ee2d83cd0cb0225f6f93847e6082484598988f696f97b3"
 dependencies = [
  "ident_case_conversions",
  "itertools 0.13.0",
@@ -1309,15 +1310,15 @@ checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 
 [[package]]
 name = "strum"
-version = "0.26.3"
+version = "0.27.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8fec0f0aef304996cf250b31b5a10dee7980c85da9d759361292b8bca5a18f06"
+checksum = "f64def088c51c9510a8579e3c5d67c65349dcf755e5479ad3d010aa6454e2c32"
 
 [[package]]
 name = "strum_macros"
-version = "0.26.4"
+version = "0.27.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c6bee85a5a24955dc440386795aa378cd9cf82acd5f764469152d2270e581be"
+checksum = "c77a8c5abcaf0f9ce05d62342b7d298c346515365c36b673df4ebe3ced01fde8"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
