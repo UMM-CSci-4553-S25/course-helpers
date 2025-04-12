@@ -6,8 +6,6 @@
 
 pub mod args;
 
-use std::default;
-
 use clap::Parser;
 use course_helpers::simplifier::{drop_one::DropOne, Simplifier};
 use ec_core::{
@@ -18,7 +16,7 @@ use ec_core::{
         genome_extractor::GenomeExtractor,
         genome_scorer::GenomeScorer,
         mutator::Mutate,
-        selector::{best::Best, lexicase::Lexicase, tournament::Tournament, Select, Selector},
+        selector::{best::Best, tournament::Tournament, Select, Selector},
         Composable,
     },
     test_results::{self, TestResults},
@@ -26,7 +24,6 @@ use ec_core::{
 };
 use ec_linear::mutator::umad::Umad;
 use miette::ensure;
-use num_traits::Float;
 use ordered_float::OrderedFloat;
 use push::{
     evaluation::{Case, Cases, WithTargetFn},
@@ -35,7 +32,7 @@ use push::{
         printing::Print, variable_name::VariableName, FloatInstruction, IntInstruction,
         PushInstruction,
     },
-    push_vm::{program::PushProgram, push_state::PushState, HasStack, State},
+    push_vm::{program::PushProgram, push_state::PushState, State},
 };
 use rand::{prelude::Distribution, rng, Rng};
 use strsim::damerau_levenshtein;

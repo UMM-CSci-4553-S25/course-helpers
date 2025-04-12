@@ -6,7 +6,6 @@ use ec_core::{
     test_results::{self, TestResults},
 };
 use num_traits::{abs_sub, Signed};
-use ordered_float::OrderedFloat;
 use push::genome::plushy::Plushy;
 use rand::Rng;
 
