@@ -5,7 +5,7 @@ use ec_core::{
     population::Population,
     test_results::{self, TestResults},
 };
-use num_traits::{abs_sub, Signed};
+use num_traits::Signed;
 use push::genome::plushy::Plushy;
 use rand::Rng;
 

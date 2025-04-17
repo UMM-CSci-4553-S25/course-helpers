@@ -66,6 +66,7 @@ fn build_push_state(
                   arguably should check that and return an error here."
     )]
     PushState::builder()
+        .with_instruction_step_limit(1000)
         .with_max_stack_size(1000)
         .with_program(program)
         .unwrap()
@@ -144,10 +145,10 @@ fn main() -> miette::Result<()> {
         FloatInstruction::Subtract,
         FloatInstruction::Multiply,
         FloatInstruction::ProtectedDivide,
-        FloatInstruction::Dup,
-        FloatInstruction::Push(OrderedFloat(0.0)),
-        FloatInstruction::Push(OrderedFloat(1.0)),
-        FloatInstruction::Push(OrderedFloat(-1.0)),
+        FloatInstruction::dup(),
+        FloatInstruction::push(0.0),
+        FloatInstruction::push(1.0),
+        FloatInstruction::push(-1.0),
         VariableName::from("x")
     ]
     .into_gene_generator();
@@ -198,7 +199,7 @@ fn main() -> miette::Result<()> {
     // TODO: This should also be removed (or the number of simplifications set to 0) when
     // doing timing comparisons since DEAP doesn't do anything like simplification.
 
-    let drop_one_simplifier = DropOne::new(scorer, 10_000, 0.000_000_1);
+    let drop_one_simplifier = DropOne::new(scorer, 10_000, OrderedFloat(0.000_000_1));
     let simplified_best = drop_one_simplifier.simplify_genome(best.genome.clone(), &mut rng);
     println!("Simplified best is {simplified_best}");
 
