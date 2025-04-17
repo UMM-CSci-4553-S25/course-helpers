@@ -56,7 +56,7 @@ where
         second: &TestResults<test_results::Error<Score>>,
     ) -> bool {
         for (x, y) in first.results.iter().zip(second.results.iter()) {
-            if abs_sub(x.0, y.0) > self.acceptable_single_error_difference {
+            if (x.0 - y.0).abs() > self.acceptable_single_error_difference {
                 return false;
             }
         }
