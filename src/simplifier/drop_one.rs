@@ -47,7 +47,7 @@ where
     }
 
     // TODO: We could change this allow _improvements_, i.e., reductions in
-    //   error as the result of simplication. That can happen, and this would
+    //   error as the result of simplification. That can happen, and this would
     //   reject anything like that.
     // TODO: Should this move to `TestResults`?
     fn nearly_equal_scores(

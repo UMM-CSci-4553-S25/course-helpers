@@ -8,6 +8,8 @@ pub mod args;
 
 use clap::Parser;
 use course_helpers::simplifier::{drop_one::DropOne, Simplifier};
+#[allow(unused_imports)]
+use ec_core::operator::selector::{lexicase::Lexicase, tournament::Tournament};
 use ec_core::{
     distributions::collection::ConvertToCollectionGenerator,
     generation::Generation,
@@ -16,7 +18,7 @@ use ec_core::{
         genome_extractor::GenomeExtractor,
         genome_scorer::GenomeScorer,
         mutator::Mutate,
-        selector::{best::Best, lexicase::Lexicase, tournament::Tournament, Select, Selector},
+        selector::{best::Best, Select, Selector},
         Composable,
     },
     test_results::{self, TestResults},
@@ -134,7 +136,7 @@ fn main() -> miette::Result<()> {
      */
     let scorer = FnScorer(|genome: &Plushy| score_genome(genome, &training_cases));
 
-    // Switching from tournament selection to lexicase selection will allow for better high success
+    // Switching from tournament selection to lexicase selection will allow for better success
     // rates even if you start with very small initial programs (e.g., length 1), which can increase
     // readability of the results even without simplification.
 
