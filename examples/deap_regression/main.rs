@@ -68,6 +68,7 @@ fn build_push_state(
     )]
     PushState::builder()
         .with_max_stack_size(1000)
+        .with_instruction_step_limit(1000)
         .with_program(program)
         .unwrap()
         .with_float_input("x", input)
@@ -137,7 +138,12 @@ fn main() -> miette::Result<()> {
     // rates even if you start with very small initial programs (e.g., length 1), which can increase
     // readability of the results even without simplification.
 
+    // Using lexicase is slower than using tournament selection, but will yield
+    // a much higher success rate. In one *little* experiment I did, using lexicase
+    // found a solution 8 times out of 10, where using tournament with the same
+    // configuration only found 1 success in 10 runs.
     // let selector = Lexicase::new(training_cases.len());
+
     // This uses a higher tournament size (10) than that used in DEAP (which uses 3). Populations
     // of Push programs tend to have a higher diversity of behaviors than populations of trees,
     // so here we apparently need a higher tournament size to ensure we're selecting and maintaining
@@ -211,7 +217,7 @@ fn main() -> miette::Result<()> {
     // TODO: This should also be removed (or the number of simplifications set to 0) when
     // doing timing comparisons since DEAP doesn't do anything like simplification.
 
-    let drop_one_simplifier = DropOne::new(scorer, 10_000, 0.000_000_1);
+    let drop_one_simplifier = DropOne::new(scorer, 10_000, OrderedFloat(0.000_000_1));
     let simplified_best = drop_one_simplifier.simplify_genome(best.genome.clone(), &mut rng);
     println!("Simplified best is {simplified_best}");
 
