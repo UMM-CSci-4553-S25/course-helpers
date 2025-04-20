@@ -44,9 +44,12 @@ use crate::args::{CliArgs, RunModel};
  * "PSB2 - the second program synthesis benchmark suite" by Thomas Helmuth and Peter Kelly
  * https://dl.acm.org/doi/10.1145/3449639.3459285
  *
- * Fizz Buzz (CW) Given an integer 𝑥, return "Fizz" if 𝑥 is divisible by 3,
+ * Fizz Buzz (CW) Given an integer 𝑥, return (sic) "Fizz" if 𝑥 is divisible by 3,
  * "Buzz" if 𝑥 is divisible by 5, "FizzBuzz" if 𝑥 is divisible by 3 and 5,
  * and a string version of 𝑥 if none of the above hold.
+ *
+ * Because (as of April 2025) we don't have a `String` stack, I've implemented
+ * this using printing instead of a return.
  */
 
 // The penalty value to use when an evolved program doesn't have an expected
@@ -178,6 +181,7 @@ fn main() -> miette::Result<()> {
         // Comment this out to see if we can evolve solutions without the combined string
         // constant being provided.
         PushInstruction::PrintString(PrintString("FizzBuzz".to_string())),
+
         ExecInstruction::if_else(),
     ]
     .into_gene_generator();
