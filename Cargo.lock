@@ -295,7 +295,7 @@ checksum = "5b63caa9aa9397e2d9480a9b13673856c78d8ac123288526c37d7839f2a86990"
 
 [[package]]
 name = "course-helpers"
-version = "0.3.2"
+version = "0.3.3"
 dependencies = [
  "anyhow",
  "bon",
@@ -424,9 +424,9 @@ checksum = "72852736692ec862655eca398c9bb1b476161b563c9f80f45f4808b9629750d6"
 
 [[package]]
 name = "ec-core"
-version = "0.1.0-course.4"
+version = "0.1.0-course.5"
 source = "registry+https://github.com/UMM-CSci-4553-S25/registry.git"
-checksum = "b68009dad8d8852af29b4b4dd459fa16b73c5c2f30f0a65f42199366f632dbf4"
+checksum = "425740f3163590ceb9e0b8183fa60b5c76ed1c34ddbb48b57ec5c83a8011bd0d"
 dependencies = [
  "ec_macros",
  "itertools 0.13.0",
@@ -442,9 +442,9 @@ dependencies = [
 
 [[package]]
 name = "ec-linear"
-version = "0.1.0-course.4"
+version = "0.1.0-course.5"
 source = "registry+https://github.com/UMM-CSci-4553-S25/registry.git"
-checksum = "f3f29c71a84e0c5ab6161f6d4ce0e5c125d2af4facdfc7620af33336c2ad9069"
+checksum = "ec09af23e7501aa1804f5eb71beac58d6e4a30549c366616f594eb4dfe76b796"
 dependencies = [
  "ec-core",
  "miette",
@@ -456,9 +456,9 @@ dependencies = [
 
 [[package]]
 name = "ec_macros"
-version = "0.1.0-course.4"
+version = "0.1.0-course.5"
 source = "registry+https://github.com/UMM-CSci-4553-S25/registry.git"
-checksum = "140b310f26ccb9aa11e0640111a53309cd71c68cc5a3732bbd6c38989e5a1a52"
+checksum = "714383c482a2d7dccb8fb03ed31f1057677ce099606e4ec0cc65efce72128174"
 dependencies = [
  "manyhow",
  "proc-macro2",
@@ -992,9 +992,9 @@ dependencies = [
 
 [[package]]
 name = "push"
-version = "0.1.0-course.4"
+version = "0.1.0-course.5"
 source = "registry+https://github.com/UMM-CSci-4553-S25/registry.git"
-checksum = "d5c853b428c0701cc4abc5de53c377f38365112802e25c52ee9a2ff37513dc7d"
+checksum = "8a587bdb6abd10a347475120a377bfd81ca70cf87b1f55cf5866682dba8a0da7"
 dependencies = [
  "collectable",
  "criterion",
@@ -1016,9 +1016,9 @@ dependencies = [
 
 [[package]]
 name = "push_macros"
-version = "0.1.0-course.4"
+version = "0.1.0-course.5"
 source = "registry+https://github.com/UMM-CSci-4553-S25/registry.git"
-checksum = "5bc4612abe60f0a022ee2d83cd0cb0225f6f93847e6082484598988f696f97b3"
+checksum = "8d3a3107de3ba16cddcd0bd76d683d663b0edbb4c10d2a49abbef9afd8e62d32"
 dependencies = [
  "ident_case_conversions",
  "itertools 0.13.0",

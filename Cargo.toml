@@ -1,12 +1,12 @@
 [package]
 name = "course-helpers"
-version = "0.3.2"
+version = "0.3.3"
 edition = "2021"
 
 [dependencies]
-ec-core = { version = "0.1.0-course.4", registry = "ec-course" }
-ec-linear = { version = "0.1.0-course.4", registry = "ec-course" }
-push = { version = "0.1.0-course.4", registry = "ec-course" }
+ec-core = { version = "0.1.0-course.5", registry = "ec-course" }
+ec-linear = { version = "0.1.0-course.5", registry = "ec-course" }
+push = { version = "0.1.0-course.5", registry = "ec-course" }
 
 anyhow = "1.0.95"
 bon = { version = "3.3.2", features = ["implied-bounds"] }
