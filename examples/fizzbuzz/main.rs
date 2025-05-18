@@ -56,8 +56,6 @@ use crate::args::{CliArgs, RunModel};
 // "return" value on the appropriate stack at the end of its execution.
 const PENALTY_VALUE: i128 = 1_000_000;
 
-/// The target polynomial is (x^3 + 1)^3 + 1
-/// i.e., x^9 + 3x^6 + 3x^3 + 2
 fn target_fn(x: i64) -> String {
     if x % 3 == 0 && x % 5 == 0 {
         return "FizzBuzz".to_string();
@@ -103,6 +101,11 @@ fn score_program(
     let answer = state.stdout_string().unwrap();
     let expected = output.to_string();
 
+    // TODO: Try 0/1 errors and see if that matters.
+
+    // This is specific to comparing strings. If you have a
+    // numeric problem, you'd want to use something like the
+    // absolute or squared difference.
     damerau_levenshtein(&answer, &expected) as i128
 }
 
@@ -132,10 +135,15 @@ fn main() -> miette::Result<()> {
 
     // 40 random pairs, with the integer in the range -100..100 and the float between 0 and 1.
     let training_cases = std::iter::repeat_with(|| rng.random_range(0..1_000_000))
+        // 100 random values between 0 and 1 million
         .take(100)
+        // plus 0..10
         .chain(0..10)
+        // plus 3, 6, 9, ..., 27
         .chain((1..10).map(|x| x * 3))
+        // plus multiples of 5
         .chain((1..10).map(|x| x * 5))
+        // plus multiples of 15
         .chain((1..10).map(|x| x * 15))
         .with_target_fn(|&x| target_fn(x));
 
@@ -150,14 +158,16 @@ fn main() -> miette::Result<()> {
      */
     let scorer = FnScorer(|genome: &Plushy| score_genome(genome, &training_cases));
 
+    // TODO: Compare lexicase selection to tournament selection
+
     // If we use Lexicase selection instead of tournament selection, individual
     // generations will be slower, but we are much more likely to find a
     // solution to this problem.
-    let selector = Lexicase::new(training_cases.len());
+    // let selector = Lexicase::new(training_cases.len());
 
     // Using tournament selection on this problem leads to significantly lower
     // likelihood of success than if we use lexicase selection.
-    // let selector = Tournament::of_size::<10>();
+    let selector = Tournament::of_size::<10>();
 
     let gene_generator = uniform_distribution_of![<PushInstruction>
         IntInstruction::Add,
